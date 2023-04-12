@@ -65,22 +65,22 @@ public class FirebaseNotificationService {
         }
 
         node.put("data", dataNode);
-
-        return client.post().bodyValue(node.toString()).retrieve().bodyToMono(String.class).map(response -> {
-            if (response != null) {
-                try {
-                    ObjectNode resultNode = (ObjectNode) mapper.readTree(response);
-                    if (resultNode.get("success") != null && Integer.parseInt(resultNode.get("success").toString()) >= 1) {
-                        return true;
-                    }
-                } catch (JsonProcessingException jsonMappingException) {
-                    log.error("Exception in sendNotificationMessage: "+jsonMappingException.getMessage());
-                } catch (NumberFormatException ex) {
-                    log.error("Exception in sendNotificationMessage: "+ex.getMessage());
-                }
-            }
-            return false;
-        });
+        return Mono.just(true);
+//        return client.post().bodyValue(node.toString()).retrieve().bodyToMono(String.class).map(response -> {
+//            if (response != null) {
+//                try {
+//                    ObjectNode resultNode = (ObjectNode) mapper.readTree(response);
+//                    if (resultNode.get("success") != null && Integer.parseInt(resultNode.get("success").toString()) >= 1) {
+//                        return true;
+//                    }
+//                } catch (JsonProcessingException jsonMappingException) {
+//                    log.error("Exception in sendNotificationMessage: "+jsonMappingException.getMessage());
+//                } catch (NumberFormatException ex) {
+//                    log.error("Exception in sendNotificationMessage: "+ex.getMessage());
+//                }
+//            }
+//            return false;
+//        });
     }
 
 //    public Mono<Boolean> sendNotificationMessage2(String token, String title, String body) {
