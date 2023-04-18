@@ -22,6 +22,7 @@ import com.uci.dao.repository.XMessageRepository;
 import com.uci.utils.BotService;
 import com.uci.utils.bot.util.FileUtil;
 
+import com.uci.utils.dto.NotificationService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -418,32 +419,32 @@ public class GupShupWhatsappAdapter extends AbstractProvider implements IProvide
 		String adapterIdFromXML = xMsg.getAdapterId();
         String adapterId = "44a9df72-3d7a-4ece-94c5-98cf26307324";
 
-		 return botservice.getAdapterCredentials(adapterIdFromXML).map(new Function<JsonNode, Mono<XMessage>>() {
+		 return botservice.getAdapterCredentials(adapterIdFromXML).map(new Function<NotificationService, Mono<XMessage>>() {
 				@Override
-				public Mono<XMessage> apply(JsonNode credentials) {
-					if(credentials != null && !credentials.isEmpty()) {							
+				public Mono<XMessage> apply(NotificationService credentials) {
+					if(credentials != null) {
 					String text = xMsg.getPayload().getText();
 					UriComponentsBuilder builder = getURIBuilder();
 					if (xMsg.getMessageState().equals(XMessage.MessageState.OPTED_IN)) {
 						text += renderMessageChoices(xMsg.getPayload().getButtonChoices());
 
-						builder = setBuilderCredentialsAndMethod(builder, MethodType.OPTIN.toString(), credentials.findValue("username2Way").asText(), credentials.findValue("password2Way").asText());
+						builder = setBuilderCredentialsAndMethod(builder, MethodType.OPTIN.toString(), credentials.getUsername2Way(), credentials.getPassword2Way());
 						builder.queryParam("channel", xMsg.getChannelURI().toLowerCase()).
 							queryParam("phone_number", "91" + xMsg.getTo().getUserID());
 					} else if (xMsg.getMessageType() != null && xMsg.getMessageType().equals(XMessage.MessageType.HSM)) {
-						optInUser(xMsg, credentials.findValue("usernameHSM").asText(), credentials.findValue("passwordHSM").asText(), credentials.findValue("username2Way").asText(), credentials.findValue("password2Way").asText());
+						optInUser(xMsg, credentials.getUsernameHSM(), credentials.getPasswordHSM(), credentials.getUsername2Way(), credentials.getPassword2Way());
 
 						text += renderMessageChoices(xMsg.getPayload().getButtonChoices());
-						builder = setBuilderCredentialsAndMethod(builder, MethodType.SIMPLEMESSAGE.toString(), credentials.findValue("usernameHSM").asText(), credentials.findValue("passwordHSM").asText());
+						builder = setBuilderCredentialsAndMethod(builder, MethodType.SIMPLEMESSAGE.toString(), credentials.getUsernameHSM(), credentials.getPasswordHSM());
 						builder.queryParam("send_to", "91" + xMsg.getTo().getUserID()).
 							queryParam("msg", text).
 							queryParam("isHSM", true).
 							queryParam("msg_type", MessageType.HSM.toString());
 					} else if (xMsg.getMessageType() != null && xMsg.getMessageType().equals(XMessage.MessageType.HSM_WITH_BUTTON)) {
-						optInUser(xMsg, credentials.findValue("usernameHSM").asText(), credentials.findValue("passwordHSM").asText(), credentials.findValue("username2Way").asText(), credentials.findValue("password2Way").asText());
+						optInUser(xMsg, credentials.getUsernameHSM(), credentials.getPasswordHSM(), credentials.getUsername2Way(), credentials.getPassword2Way());
 
 						text += renderMessageChoices(xMsg.getPayload().getButtonChoices());
-						builder = setBuilderCredentialsAndMethod(builder, "SendMessage", credentials.findValue("usernameHSM").asText(), credentials.findValue("passwordHSM").asText());
+						builder = setBuilderCredentialsAndMethod(builder, "SendMessage", credentials.getUsernameHSM(), credentials.getPasswordHSM());
 						builder.queryParam("send_to", "91" + xMsg.getTo().getUserID()).
 							queryParam("msg", text).
 							queryParam("isTemplate", "true").
@@ -456,7 +457,7 @@ public class GupShupWhatsappAdapter extends AbstractProvider implements IProvide
 						StylingTag stylingTag = xMsg.getPayload().getStylingTag() != null
 								? xMsg.getPayload().getStylingTag() : null;
 
-						builder = setBuilderCredentialsAndMethod(builder, MethodType.SIMPLEMESSAGE.toString(), credentials.findValue("username2Way").asText(), credentials.findValue("password2Way").asText());
+						builder = setBuilderCredentialsAndMethod(builder, MethodType.SIMPLEMESSAGE.toString(), credentials.getUsername2Way(), credentials.getPassword2Way());
 						builder.queryParam("send_to", "91" + xMsg.getTo().getUserID()).
 							queryParam("msg_type", MessageType.TEXT.toString());
 

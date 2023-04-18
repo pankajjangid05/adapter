@@ -6,6 +6,7 @@ import com.uci.adapter.provider.factory.AbstractProvider;
 import com.uci.adapter.provider.factory.IProvider;
 import com.uci.dao.repository.XMessageRepository;
 import com.uci.utils.BotService;
+import com.uci.utils.dto.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import messagerosa.core.model.MessageId;
 import messagerosa.core.model.XMessage;
@@ -37,20 +38,20 @@ public class CdacBulkSmsAdapter extends AbstractProvider implements IProvider {
 
     @Override
     public Mono<XMessage> processOutBoundMessageF(XMessage nextMsg) throws Exception {
-        return botService.getAdapterCredentials(nextMsg.getAdapterId()).map(new Function<JsonNode, XMessage>() {
+        return botService.getAdapterCredentials(nextMsg.getAdapterId()).map(new Function<NotificationService, XMessage>() {
             @Override
-            public XMessage apply(JsonNode credentials) {
-                if (credentials != null && !credentials.isEmpty()
-                    && credentials.get("username") != null && credentials.get("password") != null
-                    && credentials.get("senderId") != null && credentials.get("secureKey") != null) {
+            public XMessage apply(NotificationService credentials) {
+                if (credentials != null
+                    && credentials.getUsername() != null && credentials.getPassword() != null
+                    && credentials.getSenderId() != null && credentials.getSecureKey() != null) {
                     String templateId = nextMsg.getTransformers().get(0).getMetaData().get("templateId");
                     String response = cdacService.sendUnicodeSMS(
-                            credentials.get("username").asText(),
-                            credentials.get("password").asText(),
+                            credentials.getUsername(),
+                            credentials.getPassword(),
                             nextMsg.getPayload().getText(),
-                            credentials.get("senderId").asText(),
+                            credentials.getSenderId(),
                             nextMsg.getTo().getUserID(),
-                            credentials.get("secureKey").asText(),
+                            credentials.getSecureKey(),
                             templateId);
                     if (response != null) {
                         String splitResponse[] = response.split(",");

@@ -12,6 +12,7 @@ import com.uci.adapter.provider.factory.IProvider;
 import com.uci.adapter.utils.GupShupUtills;
 
 import com.uci.utils.BotService;
+import com.uci.utils.dto.NotificationService;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import messagerosa.core.model.MessageId;
@@ -87,10 +88,10 @@ public class GupShupSMSAdapter  extends AbstractProvider implements IProvider {
         String adapterIdFromXML = xMsg.getAdapterId();
 
         return botService.getAdapterCredentials(adapterIdFromXML)
-                .map(new Function<JsonNode, Mono<XMessage>>() {
+                .map(new Function<NotificationService, Mono<XMessage>>() {
                     @Override
-                        public Mono<XMessage> apply(JsonNode credentials) {
-                            if (credentials != null && !credentials.isEmpty()) {
+                        public Mono<XMessage> apply(NotificationService credentials) {
+                            if (credentials != null) {
                                 UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GUPSHUP_SMS_OUTBOUND);
 
                                 builder.queryParam("method", "SendMessage");
@@ -98,9 +99,9 @@ public class GupShupSMSAdapter  extends AbstractProvider implements IProvider {
                                 builder.queryParam("msg",  xMsg.getPayload().getText());
                                 builder.queryParam("msg_type", "Text");
                                 builder.queryParam("messageId", "123456781");
-                                builder.queryParam("userid", credentials.findValue("username").asText());
+                                builder.queryParam("userid", credentials.getUsername());
                                 builder.queryParam("auth_scheme", "plain");
-                                builder.queryParam("password", credentials.findValue("password").asText());
+                                builder.queryParam("password", credentials.getPassword());
                                 builder.queryParam("v", "1.1");
                                 builder.queryParam("format", "json");
                                 builder.queryParam("data_encoding", "text");
